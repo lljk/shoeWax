@@ -164,19 +164,16 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
         sz, self.owner.wax_settings[7], self.owner.wax_settings[8])
       )
     end
+    @info_win_open = true
   end
 
   show_info_win
   
   infobtn = image File.join(@imagedir, "info.png")
-  infobtn.click{
-    if Shoes.APPS.to_s.include?("nowPlaying")
-      @info_win.close
-    else
-      stack{show_info_win}
-    end
-    
-  }
+  infobtn.click do
+    @info_win_open ? @info_win.win.hide : @info_win.win.show
+    @info_win_open = !@info_win_open
+  end
   hover_toggle(infobtn, "infoHOVER.png")
   infobtn.move((20.0 * @scale).round, (18.0 * @scale).round)
   

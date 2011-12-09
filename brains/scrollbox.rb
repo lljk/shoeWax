@@ -16,7 +16,7 @@ class ScrollBox < Shoes::Widget
     
     @box.hover{
       @timer = animate(8){
-        @space.text = newtxt
+        @space.text = fg(newtxt, @txtclr)
         first = newtxt.slice!(0)
         newtxt << first
       }
@@ -24,7 +24,7 @@ class ScrollBox < Shoes::Widget
     
     @box.leave{
       @timer.stop if @timer
-      @space.text = txt
+      @space.text = fg(txt, @txtclr)
       newtxt = txt + "     "
     }
   end
