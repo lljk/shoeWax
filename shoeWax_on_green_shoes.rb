@@ -339,7 +339,7 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   #-----------------------------------------------
   
   def playlist(list)
-    stack{@playlist = play_list}
+    @playlist = play_list
     @playlist.add(list)
     @playlist.add_observer(self)
   end  

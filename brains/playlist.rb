@@ -69,18 +69,20 @@ class PlayList < Shoes::Widget
   def initialize
     
     @win = window title: "shoeWax playList" do
-      App.class_eval{attr_accessor :top}
+      Shoes::App.class_eval{attr_accessor :top}
       
       def init_ui
         @selected = []
     
         th = (self.height * 0.9).round.to_i
         bh = (self.height * 0.1).round.to_i
-        @top = stack width: 1.0, height: th, scroll: true
-        bottom = stack width: 1.0, height: bh, stroke: gray
+        @top = stack width: 1.0, height: th do
+        end
+        bottom = stack width: 1.0, height: bh, margin: 10 do
+        end
       
         bottom.append{
-          flow top: 10 do
+          flow do
         
             addbtn = button("add tracks"){
               changed
