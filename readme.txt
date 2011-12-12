@@ -47,4 +47,8 @@ Hello and thanks for trying out shoeWax...
   ROCK AND ROLL, BUDDY
  
   So that's really about all there is to it.
-  
+
+
+  NOTE
+
+  220px-Summer-holiday-cliff-richard.jpg is from Wikipedia: http://en.wikipedia.org/wiki/Summer_Holiday_%28album%29

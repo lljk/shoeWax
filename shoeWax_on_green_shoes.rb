@@ -76,7 +76,7 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   @x_arm = (483.0 * @scale).round
   @y_arm = (-303.0 * @scale).round
   @arm.move(@x_arm, @y_arm)
-  @arm.rotate(18.5)
+  @arm.rotate(-18.5)
   
   def hover_toggle(btn, hover_img)
     hov = image(File.join(@imagedir, hover_img), hidden: true)
@@ -93,6 +93,10 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   @playbtn = image(File.join(@imagedir, "play.png")).move(l+prevbtn.width+2, t)
   @playbtn.click{playpause_track; track_progress}
   hover_toggle(@playbtn, "playHOVER.png")
+  
+  @pausebtn = image(File.join(@imagedir, "pause.png"), hidden: true).move(@playbtn.left, @playbtn.top)
+  @pausebtn.click{playpause_track; track_progress}
+  hover_toggle(@pausebtn, "pauseHOVER.png")
   
   nextbtn = image(File.join(@imagedir, "next.png")).move(@playbtn.left+@playbtn.width+2, t)
   nextbtn.click{next_track; track_progress}
@@ -271,15 +275,11 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
     playpause_wax
     if wax_state == "playing"
       @table.path = File.join(@imagedir, "stanton1.png")
-      @playbtn.path = File.join(@imagedir, "pause.png")
-      @playbtn.hover{@playbtn.path = File.join(@imagedir, "pauseHOVER.png")}
-      @playbtn.leave{@playbtn.path = File.join(@imagedir, "pause.png")}
+      show_hide_playbtn 'pause'
       track_progress
     else
       @table.path = File.join(@imagedir, "stanton.png")
-      @playbtn.path = File.join(@imagedir, "play.png")
-      @playbtn.hover{@playbtn.path = File.join(@imagedir, "playHOVER.png")}
-      @playbtn.leave{@playbtn.path = File.join(@imagedir, "play.png")}
+      show_hide_playbtn 'play'
     end
   end
   
@@ -288,9 +288,7 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
     if wax_atbat
       update("eos")
       @table.path = File.join(@imagedir, "stanton1.png")
-      @playbtn.path = File.join(@imagedir, "pause.png")
-      @playbtn.hover{@playbtn.path = File.join(@imagedir, "pauseHOVER.png")}
-      @playbtn.leave{@playbtn.path = File.join(@imagedir, "pause.png")}
+      show_hide_playbtn 'pause'
       track_progress
     end
   end
@@ -300,19 +298,23 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
     if wax_atbat
       update("eos")
       @table.path = File.join(@imagedir, "stanton1.png")
-      @playbtn.path = File.join(@imagedir, "pause.png")
-      @playbtn.hover{@playbtn.path = File.join(@imagedir, "pauseHOVER.png")}
-      @playbtn.leave{@playbtn.path = File.join(@imagedir, "pause.png")}
+      show_hide_playbtn 'pause'
       track_progress
     end
   end
   
+  def show_hide_playbtn name
+    name == 'pause' ? (@playbtn.hide; @pausebtn.show) : (@pausebtn.hide; @playbtn.show)
+  end
+  
   def track_progress
-    @timer.remove if @timer
+    @timer = nil if @timer
+    degrees = 18.5
+    @arm.rotate(degrees)
     @timer = animate(4){
       if wax_state == "playing"
         if wax_duration > 0
-          degrees = (-5.5 / wax_duration.to_f).round(3)
+          degrees += (5.5 / wax_duration.to_f).round(3)
           @arm.rotate(degrees)
         end
       end
@@ -355,8 +357,8 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   
   
   def browser(basedir)
-      stack{@browser = dir_browser(basedir)}
-      @browser.add_observer(self)
+    @browser = dir_browser(basedir)
+    @browser.add_observer(self)
   end
   
   #---------------------------------

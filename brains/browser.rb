@@ -6,18 +6,19 @@ class BrowserListManager < Shoes::Widget
     @selected = selected
     stack{
       array.each{|entry|
-        flow width: 1.0, height: 25 do
-            txt = para File.basename(entry), stroke: gray
-          click{
-            unless @selected.include?(entry)
-              txt.style(stroke: yellow)
-              changed; notify_observers(entry)
-            else
-              txt.style(stroke: gray)
-              changed; notify_observers("unselect:#{entry}")
-            end
-          }
+        txt = nil
+        f = flow width: 1.0, height: 25 do
+          txt = para File.basename(entry), stroke: gray
         end
+        f.click{
+          unless @selected.include?(entry)
+            txt.text = fg(txt.text, yellow)
+            changed; notify_observers(entry)
+          else
+            txt.text = fg(txt.text, gray)
+            changed; notify_observers("unselect:#{entry}")
+          end
+        }
       }
     }
   end
@@ -33,24 +34,27 @@ class DirBrowser < Shoes::Widget
     @win = window title: "shoeWax directoryBrowser", width: 820 do
 
       @homedir = File.expand_path(File.dirname(__FILE__))
-      @leftpane = stack width: 200, height: 500
-      @rightpane = flow width: -205, height: 500, scroll: true
+      @leftpane = stack(width: 200, height: 500){}
+      @rightpane = flow(width: -205, height: 500){}
       @okfiles = %W[.mp3 .flac .ogg .wav]
     
       path = Dir.home unless File.exists?(path)
-  
+
       def showpath(path)
         @selected = []
-        @leftpane.clear
+        [@leftpane, @leftpane_img].clear
         @rightpane.clear
-    
+
         pathscan(path)
     
         leftSide(path)
-        rightSideDirs(@dirs) if @dirs[0] != nil
-        rightSideFiles(@files) if @files[0] != nil
+        if @files[0]
+          rightSideFiles(@files)
+        elsif @dirs[0]
+          rightSideDirs(@dirs)
+        end
       end
-  
+
       def pathscan(path)
         dirs = []
         files = []
@@ -69,15 +73,14 @@ class DirBrowser < Shoes::Widget
         @dirs = dirs.sort
         @files = files.sort
       end
-  
+
       def leftSide(path)
         getImage(path)
         @leftpane.append{
           para path, stroke: gray, width: 180, align: "center"
         }
-        @leftpane.append{img = image(@img)
-          img.style(width: 180, height: 180)
-          img.move(8, 190)
+        @leftpane.append{
+          @leftpane_img = image(@img, width: 180, height: 180).move(8, 190)
         }
         @leftpane.append{
           upbtn = button("up"){
@@ -85,7 +88,6 @@ class DirBrowser < Shoes::Widget
             showpath(new)
           }
           upbtn.move(75, 380)
-      
           appbtn = button("list << dir"){
             addfiles = []
             Find.find(path){|f|
@@ -97,7 +99,6 @@ class DirBrowser < Shoes::Widget
             showpath(new)
           }
           appbtn.move(38, 435)
-      
           prebtn = button("dir >> list"){
             addfiles = []
             Find.find(path){|f|
@@ -109,40 +110,38 @@ class DirBrowser < Shoes::Widget
             showpath(new)
           }
           prebtn.move(38, 465)
-          
         }
       end
-  
+
       def rightSideDirs(dirs)
         dirs.each{|d|
           getImage(d)
           @rightpane.append{
             s = stack width:200 do
-            i = image(@img)
-            i.style(width: 190, height: 190, align: "center")
-            para File.basename(d), stroke: gray, align: "center"
+              i = image(@img, width: 190, height: 190, align: "center")
+              para File.basename(d), stroke: gray, align: "center"
             end
             s.click{showpath(d)}
           }
         }
       end
-  
+
       def rightSideFiles(files)
         @rightpane.clear
         @rightpane.append{
-          th = (parent.height * 0.9).round.to_i
-          bh = (parent.height * 0.1).round.to_i
-          top = stack width: 1.0, height: th, scroll: true
-          bottom = stack width: 1.0, height: bh, stroke: gray
+          th = (@rightpane.parent.height * 0.9).round.to_i
+          bh = (@rightpane.parent.height * 0.1).round.to_i
+          top = stack(width: 1.0, height: th){}
+          bottom = stack(width: 1.0, height: bh){}
         
           top.append{
             lm = browser_list_manager(files)
             lm.add_observer(self)
           }
-      
+
           bottom.append{
             btns = flow{
-        
+
               button("list << tracks"){
                 @selected << "LIST:APPEND"
                 changed; notify_observers(@selected)
@@ -158,11 +157,11 @@ class DirBrowser < Shoes::Widget
               }
   
             }
-            btns.style(top: 10, left: 20)
+            #btns.style(top: 10, left: 20)
           }
         }
       end
-  
+
       def getImage(path)
         Dir.chdir(path)
         imgfiles = Dir['*.{jpg,JPG,png,PNG,gif,GIF}']
@@ -183,7 +182,7 @@ class DirBrowser < Shoes::Widget
         @selected << message
         end
       end
-    
+
       showpath(path)
 
     end #window
