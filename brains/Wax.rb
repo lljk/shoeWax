@@ -97,6 +97,7 @@ module Wax
             when Gst::Message::ERROR
               p message.parse
             when Gst::Message::EOS
+              @wax_state = "stopped"
               next_wax
               send_wax_info("eos")
             when Gst::Message::TAG

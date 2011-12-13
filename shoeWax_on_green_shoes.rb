@@ -59,8 +59,10 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   #  LAYOUT
   #--------------------------
   
+  nofill; nostroke
   seekarea = rect((325 * @scale).round, (360 * @scale).round, (125 * @scale).round, (125 * @scale).round)
   seekarea.click{seek}
+  fill black; stroke black
   
   if wax_coverart
     @cover = image wax_coverart, width: (485.0 * @scale).round, height: (485.0 * @scale).round
@@ -76,7 +78,7 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   @x_arm = (483.0 * @scale).round
   @y_arm = (-303.0 * @scale).round
   @arm.move(@x_arm, @y_arm)
-  @arm.rotate(-18.5)
+  @arm.rotate(18.5)
   
   def hover_toggle(btn, hover_img)
     hov = image(File.join(@imagedir, hover_img), hidden: true)
@@ -191,37 +193,37 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
     
     case
       
-      when message == "wax_info"
+    when message == "wax_info"
       @info_box.show_info(wax_info) if @info_win
       
-      when message == "eos"
+    when message == "eos"
       if wax_coverart
         @cover.path = wax_coverart
       else
         @cover.path = File.join(@brainsdir, "images", "no_cover.jpg")
       end
-      @arm.remove
-      @arm = image File.join(@imagedir, "arm.png")
-      @arm.move(@x_arm, @y_arm)
-      @arm.rotate(-18.5)
+      #@arm.remove
+      #@arm = image File.join(@imagedir, "arm.png")
+      #@arm.move(@x_arm, @y_arm)
+      @arm.rotate(@degrees = 18.5)
       @info_box.show_info(wax_info) if @info_win
       
-      when msg == "LIST:APPEND"
+    when msg == "LIST:APPEND"
       message.pop
       message.each{|e| wax_lineup << e}
       update_playlist(wax_lineup)
       
-      when msg == "LIST:PREPEND"
+    when msg == "LIST:PREPEND"
       message.pop
       message.each{|e| wax_lineup.insert(0, e)}
       update_playlist(wax_lineup)
       
-      when msg == "LIST:DELTRACKS"
+    when msg == "LIST:DELTRACKS"
       message.pop
       message.each{|e| wax_lineup.delete(e)}
       update_playlist(wax_lineup)
       
-      when msg == "LIST:LOAD"
+    when msg == "LIST:LOAD"
       self.wax_lineup = []
       message.pop
       f_name = message.pop
@@ -235,7 +237,7 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
       @cover.path = wax_coverart
       @info_box.show_info(File.basename(wax_atbat)) if @info_win
       
-      when message == "LIST:CLEAR"
+    when message == "LIST:CLEAR"
       stop_wax
       wax_lineup.clear
       wax_lupine.clear
@@ -246,13 +248,13 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
       @info_box.show_info("no track") if @info_win
       update_playlist(wax_lineup)
       
-      when msg == "LIST:SAVE"
+    when msg == "LIST:SAVE"
       self.wax_roster = message[0]
       
-      when message == "LIST:BROWSER"
+    when message == "LIST:BROWSER"
       browser(@musicdir)
       
-      when msg == "TITLE_FORMAT"
+    when msg == "TITLE_FORMAT"
       message.pop
       save_wax_settings(message)
       read_wax_settings
@@ -276,7 +278,6 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
     if wax_state == "playing"
       @table.path = File.join(@imagedir, "stanton1.png")
       show_hide_playbtn 'pause'
-      track_progress
     else
       @table.path = File.join(@imagedir, "stanton.png")
       show_hide_playbtn 'play'
@@ -308,17 +309,17 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   end
   
   def track_progress
-    @timer = nil if @timer
-    degrees = 18.5
-    @arm.rotate(degrees)
+    @degrees ||= 18.5
+    @arm.rotate(@degrees)
+
     @timer = animate(4){
       if wax_state == "playing"
         if wax_duration > 0
-          degrees += (5.5 / wax_duration.to_f).round(3)
-          @arm.rotate(degrees)
+          @degrees += (5.5 / wax_duration.to_f).round(3)
+          @arm.rotate(@degrees)
         end
       end
-    }
+    } unless @timer
   end
   
   def seek

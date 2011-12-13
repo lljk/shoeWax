@@ -35,7 +35,9 @@ class VolumeBar < Shoes::Widget
   end
   
   def setvol(pos)
-    vol = (pos - 160 * @scale) / 100.0
+    vol = (160 * @scale * 3 - pos) / 100.0
+    vol = 0 if vol < 0
+    vol = 1 if vol > 1
     @pipeline.volume = vol.round(1)
   end
   
