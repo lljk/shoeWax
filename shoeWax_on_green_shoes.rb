@@ -48,9 +48,13 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   @brainsdir = brainsdir
   @musicdir = wax_settings[9]
   @imagedir = imagedir
-  @back = background wax_settings[8]
   @scale = scl
   @wax_info = "shoeWax"
+	text_rgb = wax_settings[7].split(",")
+	@text_color = rgb(text_rgb[0].to_f, text_rgb[1].to_f, text_rgb[2].to_f)
+	bg_rgb = wax_settings[8].split(",")
+	@bg_color = rgb(bg_rgb[0].to_f, bg_rgb[1].to_f, bg_rgb[2].to_f)
+	@back = background @bg_color
   
   batter_up_wax
   
@@ -150,7 +154,9 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
     if Shoes.APPS.to_s.include?("settings")
       @set_man.close
     else
-    stack{@set_man = settings_manager; @set_man.add_observer(self)}
+			@set_man = window height: 420 do
+				sm = settings_manager; sm.add_observer(self.owner)
+			end
     end
   }
   hover_toggle(setbtn, "settingsHOVER.png")
@@ -162,12 +168,14 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   def show_info_win
     sz = wax_settings[6].to_i
     h = (sz + (21 + ((sz / 7) * 7))).round
+		text_color = @text_color
+		bg_color = @bg_color
     
     @info_win = window title: "shoeWax nowPlaying", height: h, scroll: false do
-      background self.owner.wax_settings[8]
+      background bg_color
       self.owner.instance_variable_set(
         "@info_box", scroll_box(self.owner.wax_info, self.owner.wax_settings[5],
-        sz, self.owner.wax_settings[7], self.owner.wax_settings[8])
+        sz, text_color, bg_color)
       )
     end
     @info_win_open = true

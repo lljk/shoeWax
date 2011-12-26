@@ -1,7 +1,9 @@
+require 'green_shoes'
+
 class ScrollBox < Shoes::Widget
   
   def initialize(txt, fnt, sz, txtclr, bgclr)
-    @txtclr = eval txtclr
+		@txtclr = txtclr
     @back = background bgclr
     @box = flow{
       @space = para "", font: fnt, stroke: @txtclr, size: sz, align: "center", wrap: "trim"
@@ -30,8 +32,8 @@ class ScrollBox < Shoes::Widget
   end
   
   def set_format(fnt, sz, txtclr, bgclr)
-    @back.fill = bgclr
-    @space.style(font: fnt, size: sz, stroke: txtclr)
+		@back.style(fill: bgclr)
+    @space.style(font: fnt, size: sz.to_i, stroke: txtclr)
   end
   
   def clear_text
