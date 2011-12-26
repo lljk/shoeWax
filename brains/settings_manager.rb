@@ -1,5 +1,3 @@
-require 'green_shoes'
-require 'observer'
 
 class TextSampleBox < Shoes::Widget
 	def initialize(width, text_color, bg_color, font, size)
