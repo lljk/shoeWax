@@ -17,7 +17,7 @@ if File.exists?(settings_file)
 else
   settings = [
     "none", "shuffle off", "none", "#title# - #artist# - #album#",
-    "50%", "Arial", "13", "rgb(255, 255, 255)", "rgb(0, 0, 0)", "none"
+    "50%", "Arial", "13", "255, 255, 255", "0, 0, 0", "none"
   ]
   File.open(settings_file, "w"){|file|
     settings.each{|line| file.puts line}
@@ -50,11 +50,6 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   @imagedir = imagedir
   @scale = scl
   @wax_info = "shoeWax"
-	text_rgb = wax_settings[7].split(",")
-	@text_color = rgb(text_rgb[0].to_f, text_rgb[1].to_f, text_rgb[2].to_f)
-	bg_rgb = wax_settings[8].split(",")
-	@bg_color = rgb(bg_rgb[0].to_f, bg_rgb[1].to_f, bg_rgb[2].to_f)
-	@back = background @bg_color
   
   batter_up_wax
   
@@ -66,6 +61,16 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   nofill; nostroke
   seekarea = rect((325 * @scale).round, (360 * @scale).round, (125 * @scale).round, (125 * @scale).round)
   seekarea.click{seek}
+	
+	def get_colors(settings)
+		txt_clr = settings[7].split(',')
+		@text_color = rgb(txt_clr[0].to_f.round(3), txt_clr[1].to_f.round(3), txt_clr[2].to_f.round(3))
+		bg_clr = settings[8].split(',')
+		@bg_color = rgb(bg_clr[0].to_f.round(3), bg_clr[1].to_f.round(3), bg_clr[2].to_f.round(3))
+	end
+	
+	get_colors(wax_settings)
+	background @bg_color
   fill black; stroke black
   
   if wax_coverart
@@ -266,11 +271,12 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
       message.pop
       save_wax_settings(message)
       read_wax_settings
-      fill = wax_settings[8]
+			get_colors(wax_settings)
+			fill = @bg_color
       if @info_win
         @info_win.close
         show_info_win
-        @info_box.set_format(wax_settings[5], wax_settings[6], wax_settings[7], wax_settings[8])
+        @info_box.set_format(wax_settings[5], wax_settings[6], @text_color, @bg_color)
       end
     end  #case
     

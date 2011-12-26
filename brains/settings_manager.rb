@@ -36,7 +36,7 @@ class SettingsManager < Shoes::Widget
 		else
 			settings = [
 				"none", "shuffle off", "none", "#title# - #artist# - #album#",
-			"50%", "Arial", "13", "rgb(255, 255, 255)", "rgb(0, 0, 0)", "none"
+			"50%", "Arial", "13", "255, 255, 255", "0, 0, 0", "none"
 			]
 			File.open(homedir + "/settings/settings.txt", "w"){|file|
 				settings.each{|line| file.puts line}
