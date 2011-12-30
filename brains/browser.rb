@@ -42,9 +42,9 @@ class DirBrowser < Shoes::Widget
 			@rightside = flow(width: 0.75, margin_left: 65){right_side}
 			
 			pinning @leftside
-			pinning @current_btn[0]
-			pinning @append_btn[1]
-			pinning @prepend_btn[2]
+			pinning @current_btn[0]  ## these end up being arrays of slots,
+			pinning @append_btn[1]  ##
+			pinning @prepend_btn[2]  ## weird...
 			
 		end
 	end
@@ -66,13 +66,13 @@ class DirBrowser < Shoes::Widget
 			flow(height: 15){}
 			@append_btn = flow(width: @left_width){
 				border gray
-					para "append directory", align: "center", margin_top: 3
+					para "list << directory".esc_html, align: "center", margin_top: 3
 			}.click{append_dir}
 			
 			flow(height: 15){}
 			@prepend_btn = flow(width: @left_width){
 				border gray
-					para "prepend directory", align: "center", margin_top: 3
+					para "directory >> list".esc_html, align: "center", margin_top: 3
 			}.click{prepend_dir}
 		
 	end
@@ -110,16 +110,27 @@ class DirBrowser < Shoes::Widget
 	end
 	
 	def update_ui
-		
-		@dir_image.path = @image_file
-		@dir_text.text = @current_dir.esc_html
+
+		@leftside.clear
+		@leftside.append{left_side}
 		
 		@rightside.clear
 		@rightside.append{right_side}
 		
+		pinning @leftside
+		pinning @current_btn[-1]  ## 
+		pinning @append_btn[-2]  ## more weirdness
+		pinning @prepend_btn[-3]  ##
+	
 	end
 	
 	def update_dir(dir)
+		
+		## this isn't working quite right -
+		## this is called from the right side directory entries,
+		## if the right side has been scrolled, the left side is not updated correctly
+		## until you select another file or directory on the right
+		
 		pathscan(dir)
 		update_ui
 	end
