@@ -7,6 +7,7 @@ require File.join(brainsdir, "playlist")
 require File.join(brainsdir,  "browser")
 require File.join(brainsdir, "scrollbox")
 require File.join(brainsdir, "settings_manager")
+require File.join(brainsdir, "helper_methods")
 
 settings_file = File.join(brainsdir, "settings", "settings.txt")
 if File.exists?(settings_file)
@@ -46,10 +47,14 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   init_wax
   
   @brainsdir = brainsdir
-  @musicdir = wax_settings[9]
   @imagedir = imagedir
   @scale = scl
   @wax_info = "shoeWax"
+	if File.exists?(wax_settings[9])
+		@musicdir = wax_settings[9]
+	else
+		@musicdir = File.dirname(File.expand_path(__FILE__))
+	end
   
   batter_up_wax
   
@@ -146,8 +151,8 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   
   dbbtn = image(File.join(@imagedir, "dugout.png")).move(l+listbtn.width+2, t)
   dbbtn.click{
-    if Shoes.APPS.to_s.include?("directoryBrowser")
-      @browser.close
+    if @browser
+      @browser.close; @browser = nil
     else
       browser(@musicdir)
     end
@@ -159,7 +164,7 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
     if Shoes.APPS.to_s.include?("settings")
       @set_man.close
     else
-			@set_man = window height: 420 do
+			@set_man = window height: 490 do
 				sm = settings_manager; sm.add_observer(self.owner)
 			end
     end
@@ -276,7 +281,7 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
       if @info_win
         @info_win.close
         show_info_win
-        @info_box.set_format(wax_settings[5], wax_settings[6], @text_color, @bg_color)
+        #@info_box.set_format(wax_settings[5], wax_settings[6], @text_color, @bg_color)
       end
     end  #case
     
@@ -372,8 +377,11 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   
   
   def browser(basedir)
-    @browser = dir_browser(basedir)
-    @browser.add_observer(self)
+		main_app = self
+		@browser = window{
+			browser = dir_browser(basedir)
+			browser.add_observer(main_app)
+		}
   end
   
   #---------------------------------
@@ -382,10 +390,10 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
   add_observer(self) 
   
   # close all windows and save at shutdown
-  #transport.finish{
-    #stop_wax
+  #self.close{
+  #  stop_wax
     #save_wax_settings(wax_settings)
-    #quit
+  #  quit
   #}
   
 end  #Shoes.app
