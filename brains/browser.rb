@@ -24,8 +24,7 @@ class DirBrowser < Shoes::Widget
 		@listselection.mode=(Gtk::SELECTION_MULTIPLE)
 		@view.signal_connect("row-activated"){|view, path, column|
 			right_select(path.indices[0])
-			@append_btn.sensitive = false
-			@prepend_btn.sensitive = false
+			add_btns_active(false)
 		}
 		@listselection.signal_connect("changed"){add_btns_active(true)}
 		
@@ -133,11 +132,11 @@ class DirBrowser < Shoes::Widget
 	def up_one_dir
 		newpath = @current_dir.split(File::Separator)[0..-2].join(File::Separator)
 		update_dir(newpath)
+		add_btns_active(false)
 	end
 	
 	def update_dir(path)
 		pathscan(path)
-		add_btns_active(false)
 		update_ui
 	end
 	
