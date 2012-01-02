@@ -55,7 +55,7 @@ class DirBrowser < Shoes::Widget
 		@img = Gtk::Image.new()
 		@current_dir_btn.add(@img)
 		@current_dir_btn.signal_connect("button_press_event"){
-			@listselection.select_all#; add_btns_active = true
+			@listselection.select_all
 		}
 		current_btn_frame.add(@current_dir_btn)
 		
@@ -109,7 +109,6 @@ class DirBrowser < Shoes::Widget
 		@img = Gtk::Image.new(pbuf)
 		@current_dir_btn.add(@img)
 		@current_dir_text.text = @current_dir
-		#add_btns_active = false
 		@left.show_all
 
 		@list.clear
