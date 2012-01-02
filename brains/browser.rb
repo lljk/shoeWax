@@ -10,6 +10,8 @@ class DirBrowser < Shoes::Widget
 		
 		@win = Gtk::Window.new
 		@win.set_size_request(750, 450)
+                @win.icon = Gdk::Pixbuf.new File.join(DIR, '../static/gshoes-icon.png')
+                @win.title = 'Directory Browser'
 		
 		## rightside TreeView
 		@list = Gtk::ListStore.new(String, String)
