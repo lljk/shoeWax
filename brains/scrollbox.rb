@@ -1,4 +1,3 @@
-require 'green_shoes'
 
 class ScrollBox < Shoes::Widget
   

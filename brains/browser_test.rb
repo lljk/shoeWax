@@ -1,9 +1,9 @@
 require 'green_shoes'
 require 'observer'
-require './helper_methods.rb'###
+require './helper_methods.rb'
 require './browser.rb'
 
-Shoes.app height: 700 do
+Shoes.app do
 	
 	def update(message)
 		p message
