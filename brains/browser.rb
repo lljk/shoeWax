@@ -24,7 +24,10 @@ class DirBrowser < Shoes::Widget
 		@listselection.mode=(Gtk::SELECTION_MULTIPLE)
 		@view.signal_connect("row-activated"){|view, path, column|
 			right_select(path.indices[0])
+			@append_btn.sensitive = false
+			@prepend_btn.sensitive = false
 		}
+		@listselection.signal_connect("changed"){add_btns_active(true)}
 		
 		## main panel
 		@main = Gtk::HBox.new(false, 5)
@@ -44,45 +47,48 @@ class DirBrowser < Shoes::Widget
 		
 		#### left side
 		@left = Gtk::VBox.new(false, 2)
-		@left.width_request = 200
+		@left.set_size_request(200, 450)
 		
-		up_btn_frame = Gtk::Frame.new("../")
+		current_btn_frame = Gtk::Frame.new()
+		@current_dir_btn = Gtk::EventBox.new()
+		@current_dir_btn.set_size_request(200, 200)
+		@img = Gtk::Image.new()
+		@current_dir_btn.add(@img)
+		@current_dir_btn.signal_connect("button_press_event"){
+			@listselection.select_all#; add_btns_active = true
+		}
+		current_btn_frame.add(@current_dir_btn)
+		
+		up_btn_frame = Gtk::Frame.new("/../")
 		up_btn_frame.label_xalign = 0.05
 		@up_dir_btn = Gtk::EventBox.new()
 		@current_dir_text = Gtk::Label.new()
 		@current_dir_text.width_chars = (26)
 		@current_dir_text.set_wrap(true)
 		@current_dir_text.justify = Gtk::JUSTIFY_CENTER
+		@current_dir_text.ypad = 5
 		@up_dir_btn.add(@current_dir_text)
 		@up_dir_btn.signal_connect("button_press_event"){up_one_dir}
 		up_btn_frame.add(@up_dir_btn)
 		
-		dir_btn_box = Gtk::HBox.new(true, 2)
-		append_btn = Gtk::Button.new("list << dir")
-		append_btn.signal_connect("clicked"){append_dir}
-		prepend_btn = Gtk::Button.new("dir >> list")
-		prepend_btn.signal_connect("clicked"){prepend_dir}
-		dir_btn_box.pack_start(append_btn, true, true, 2)
-		dir_btn_box.pack_start(prepend_btn, true, true, 2)
-		
-		@file_btn_box = Gtk::HBox.new(true, 2)
-		append_btn1 = Gtk::Button.new("list << files")
-		append_btn1.signal_connect("clicked"){append_files}
-		prepend_btn1 = Gtk::Button.new("files >> list")
-		prepend_btn1.signal_connect("clicked"){prepend_files}
-		@file_btn_box.pack_start(append_btn1, true, true, 2)
-		@file_btn_box.pack_start(prepend_btn1, true, true, 2)
-		@file_btn_box.name = "file_btns"
+		add_btns_box = Gtk::HBox.new(true, 2)
+		@append_btn = Gtk::Button.new("list <<")
+		@append_btn.signal_connect("clicked"){add_selection("append")}
+		@prepend_btn = Gtk::Button.new(">> list")
+		@prepend_btn.signal_connect("clicked"){add_selection("prepend")}
+		@append_btn.sensitive = false
+		@prepend_btn.sensitive = false
+		add_btns_box.pack_start(@append_btn, true, true, 2)
+		add_btns_box.pack_start(@prepend_btn, true, true, 2)
 
-		@left.pack_end(@file_btn_box, true, true, 0)
-		@left.pack_end(dir_btn_box, true, true, 15)
-		@left.pack_end(up_btn_frame, true, true, 10)
+		@left.pack_start(current_btn_frame, false, false, 10)
+		@left.pack_start(up_btn_frame, false, false, 10)
+		@left.pack_end(add_btns_box, false, false, 10)
 		
 		## main panel
 		@leftalign = Gtk::Alignment.new(0.5, 0, 0, 0)
-		@rightalign = Gtk::Alignment.new(0, 0, 1, 0)
-		
 		@leftalign.add(@left)
+		@rightalign = Gtk::Alignment.new(0, 0, 1, 0)
 		@rightalign.add(@right)
 		
 		@main.pack_start(@leftalign, true, true, 2)
@@ -98,20 +104,17 @@ class DirBrowser < Shoes::Widget
 	end
 	
 	def update_ui
-		
-		@left.remove(@img) if @img
+		@current_dir_btn.remove(@img)
 		pbuf = Gdk::Pixbuf.new(@image_file, 200, 200)
 		@img = Gtk::Image.new(pbuf)
-		@left.pack_start(@img, true, true, 2)
+		@current_dir_btn.add(@img)
 		@current_dir_text.text = @current_dir
-		@file_btn_box.no_show_all = @files.empty?
-		@file_btn_box.hide if @files.empty?
+		#add_btns_active = false
 		@left.show_all
 
 		@list.clear
 		@dirs.each{|dir| add_to_list(dir)} if @dirs[0]
 		@files.each{|file| add_to_list(file)} if @files[0]
-		
 	end
 	
 	def add_to_list(entry)
@@ -122,8 +125,7 @@ class DirBrowser < Shoes::Widget
 	
 	def right_select(index)
 		if @dirs.include?(@dirs[index])
-			pathscan(@dirs[index])
-			update_ui
+			update_dir(@dirs[index])
 		elsif @files.include?(@files[index - @dirs.length])
 			changed; notify_observers([@files[index - @dirs.length], "LIST:PLAY_NOW"])
 		end
@@ -136,39 +138,38 @@ class DirBrowser < Shoes::Widget
 	
 	def update_dir(path)
 		pathscan(path)
+		add_btns_active(false)
 		update_ui
 	end
 	
-	def append_dir
-		Find.find(@current_dir){|item|
-			@okfiles.each{|ok| @selected << item if item.downcase =~ ok}
+	def add_btns_active(boolean)
+		@append_btn.sensitive = boolean
+		@prepend_btn.sensitive = boolean
+	end
+	
+	def add_selection(position)
+		dirs = []
+		files = []
+		@listselection.selected_each{|mod, path, iter|
+			dirs << iter[1] ? File.directory?(iter[1]) : files << iter[1]
 		}
-		@selected << "LIST:APPEND"
-		changed; notify_observers(@selected)
-		@selected = []
 		
-	end
-	
-	def prepend_dir
-		Find.find(@current_dir){|item|
-			@okfiles.each{|ok| @selected << item if item.downcase =~ ok}
-		}
-		@selected << "LIST:PREPEND"
-		changed; notify_observers(@selected)
-		@selected = []
-	end
-	
-	def append_files
-		@listselection.selected_each{|mod, path, iter| @selected << iter[1]}
-		@selected << "LIST:APPEND"
-		changed; notify_observers(@selected)
-		@selected = []
-		@listselection.unselect_all
-	end
-	
-	def prepend_files
-		@listselection.selected_each{|mod, path, iter| @selected << iter[1]}
-		@selected << "LIST:PREPEND"
+		files.each{|file| @selected << file} if files[0]		
+		
+		if dirs[0]
+			dirs.each{|dir| 
+				Find.find(dir){|item|
+				@okfiles.each{|ok| @selected << item if item.downcase =~ ok}
+				}	
+			}
+		end
+		
+		if position == "prepend"
+			@selected << "LIST:PREPEND"
+		else
+			@selected << "LIST:APPEND"
+		end
+		
 		changed; notify_observers(@selected)
 		@selected = []
 		@listselection.unselect_all

@@ -277,15 +277,15 @@ Shoes.app title: "ShoeWax", width: 728 * scl, height: 593 * scl do
 			if wax_lineup.include?(message[0])
 				self.wax_batter = wax_lineup.index(message[0])
 				batter_up_wax
-				stop_wax; play_wax
+				stop_wax; playpause_track
 			else
 				if wax_lineup.empty?
 					wax_lineup << message[0]
 					batter_up_wax
-					playpause_wax
+					playpause_track
 				else
 					wax_lineup.insert(wax_batter + 1, message[0])
-					next_wax
+					next_track
 				end
 				update_playlist(wax_lineup)
 			end
