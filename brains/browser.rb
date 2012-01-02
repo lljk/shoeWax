@@ -14,7 +14,7 @@ class DirBrowser < Shoes::Widget
 		## rightside TreeView
 		@list = Gtk::ListStore.new(String, String)
 		@view = Gtk::TreeView.new(@list)
-		@view.reorderable=(true)
+		@view.reorderable=(false)
 		@view.enable_search=(true)
 		@view.headers_visible=(false)
 		@renderer = Gtk::CellRendererText.new
